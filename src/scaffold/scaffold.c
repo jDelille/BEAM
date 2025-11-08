@@ -128,7 +128,6 @@ int extract_placeholders(const char *template_name, char placeholder_keys[MAX_PL
     return extract_placeholders_from_template(template_name, placeholder_keys, placeholder_defaults, MAX_PLACEHOLDERS);
 }
 
-// Function to prepare the replacement arrays
 void prepare_replacement_arrays(int num_placeholders, const char placeholder_keys[MAX_PLACEHOLDERS][128],
                                 const char user_values[MAX_PLACEHOLDERS][128], const char **key_ptrs,
                                 const char **replacement_ptrs)

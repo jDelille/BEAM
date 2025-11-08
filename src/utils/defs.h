@@ -4,8 +4,8 @@
 
 // Styling
 #define STYLE_CYAN_BLUE        "\033[1;36m"
-#define STYLE_BLUE_UNDERLINE "\033[1;36m"
-#define STYLE_RESET          "\033[0m"
+#define STYLE_BLUE_UNDERLINE   "\033[38;5;32m"
+#define STYLE_RESET            "\033[0m"
 #define HIGHLIGHT_TEMPLATE     STYLE_CYAN_BLUE
 #define ARROW_COLOR            STYLE_CYAN_BLUE
 #define STYLE_GRAY "\033[90m"

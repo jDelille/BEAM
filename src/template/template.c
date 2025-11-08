@@ -8,81 +8,8 @@
 #include <stdbool.h>
 
 #include "../utils/defs.h"
+#include "../utils/utils.h"
 
-bool file_exists(const char *file_path)
-{
-    return access(file_path, F_OK) == 0;
-}
-
-void convert_windows_path_to_wsl(char *file_path)
-{
-
-    bool is_windows_path =
-        strlen(file_path) >= 3 &&
-        file_path[1] == ':' &&
-        (file_path[2] == '\\' || file_path[2] == '/');
-    ;
-
-    if (is_windows_path)
-    {
-        char wsl_path[512];
-        snprintf(wsl_path, sizeof(wsl_path), "/mnt/%c/%s", tolower(file_path[0]), file_path + 3);
-        strncpy(file_path, wsl_path, 512);
-    }
-
-    for (char *current_char = file_path; *current_char; ++current_char)
-    {
-        if (*current_char == '\\')
-        {
-            *current_char = '/';
-        }
-    }
-}
-
-bool ensure_template_dir_exists(void)
-{
-    return access(".templates", F_OK) == 0 || mkdir(".templates", 0700) == 0;
-}
-
-char *get_filename(const char *path)
-{
-    char *path_copy = strdup(path);
-    char *base_name = basename(path_copy);
-    char *result = strdup(base_name);
-    free(path_copy);
-    return result;
-}
-
-/* Copy a file from src to dst */
-bool copy_file(const char *src_path, const char *dst_path)
-{
-
-    FILE *src_file = fopen(src_path, "r");
-    if (!src_file)
-    {
-        perror("Error opening source");
-        return false;
-    }
-
-    FILE *dst_file = fopen(dst_path, "w");
-    if (!dst_file)
-    {
-        perror("Error creating dest");
-        fclose(src_file);
-        return false;
-    }
-
-    char buffer[1024];
-    size_t bytes_read;
-    while ((bytes_read = fread(buffer, 1, sizeof(buffer), src_file)) > 0)
-    {
-        fwrite(buffer, 1, bytes_read, dst_file);
-    }
-
-    fclose(src_file);
-    fclose(dst_file);
-    return true;
-}
 
 void install_template(const char *template_path)
 {
@@ -153,89 +80,6 @@ void create_dir_from_line(const char *line, const char *projectName)
     snprintf(path, sizeof(path), "%s/%.*s", projectName, (int)(dir_length - 1), dir_name); // remove trailing /
 
     mkdir(path, 0755);
-}
-
-static void trim_trailing_whitespace(char *string)
-{
-    size_t length = strlen(string);
-    while (length > 0 && isspace((unsigned char)string[length - 1]))
-    {
-        string[--length] = '\0';
-    }
-}
-
-static void ensure_parent_dirs(const char *file_path)
-{
-    char tmp[512];
-    strcpy(tmp, file_path);
-    char *dir = dirname(tmp);
-    if (dir)
-    {
-        mkdir(dir, 0755);
-    }
-}
-
-static void replace_placeholders(
-    const char *input_line,
-    const char **placeholder_keys,
-    const char **replacement_values,
-    int key_count,
-    char *output,
-    size_t output_size)
-{
-    output[0] = '\0';
-    const char *cursor = input_line;
-
-    while (*cursor)
-    {
-        const char *start_bracket = strchr(cursor, '[');
-        if (!start_bracket)
-        {
-            strncat(output, cursor, output_size - strlen(output) - 1);
-            break;
-        }
-
-        strncat(output, cursor, start_bracket - cursor);
-
-        const char *end_bracket = strchr(start_bracket, ']');
-        if (!end_bracket)
-        {
-            strncat(output, start_bracket, output_size - strlen(output) - 1);
-            break;
-        }
-
-        char placeholder[128];
-        char default_value[128] = "";
-
-        size_t key_len = end_bracket - start_bracket - 1;
-        if (key_len >= sizeof(placeholder))
-            key_len = sizeof(placeholder) - 1;
-        strncpy(placeholder, start_bracket + 1, key_len);
-        placeholder[key_len] = '\0';
-
-        char *equal_sign = strchr(placeholder, '=');
-
-        if (equal_sign)
-        {
-            *equal_sign = '\0';
-            strncpy(default_value, equal_sign + 1, sizeof(default_value));
-        }
-
-        // Find replacement from user input
-        const char *replacement = default_value;
-
-        for (int i = 0; i < key_count; i++)
-        {
-            if (strcmp(placeholder, placeholder_keys[i]) == 0)
-            {
-                replacement = replacement_values[i];
-                break;
-            }
-        }
-
-        strncat(output, replacement, output_size - strlen(output) - 1);
-        cursor = end_bracket + 1;
-    }
 }
 
 void create_file_from_line(
@@ -376,11 +220,59 @@ int extract_placeholders_from_template(
     return placeholder_count;
 }
 
+
+void print_colored_file_header(const char *line)
+{
+    // Skip the "//" prefix
+    const char *file_line = line + 2;
+
+    // Remove leading spaces after "//"
+    while (*file_line == ' ' || *file_line == '\t')
+    {
+        file_line++;  // Skip the leading spaces
+    }
+
+    // Remove trailing spaces and newline characters
+    size_t len = strlen(file_line);
+    while (len > 0 && (file_line[len - 1] == '\n' || file_line[len - 1] == ' ' || file_line[len - 1] == '\t'))
+    {
+        len--;
+    }
+
+    // Create a copy of the line up to the cleaned length
+    char mutable_line[len + 1];
+    strncpy(mutable_line, file_line, len);
+    mutable_line[len] = '\0';  // Ensure null-termination
+
+    // Look for the '/' character to separate directory and file
+    const char *slash_pos = strchr(mutable_line, '/');
+
+    if (slash_pos != NULL)
+    {
+        // Found a '/', treat it as a directory and file
+        size_t dir_len = slash_pos - mutable_line;
+        
+        // Print the directory part (in green)
+        printf("%s", STYLE_GREEN);
+        printf("%.*s", (int)dir_len, mutable_line);  // Print only the directory part
+        printf("%s", STYLE_RESET);  // Reset color after directory part
+
+        // Print the '/' symbol in green
+        printf("%s/", STYLE_GREEN);
+
+        // Print the file part (after the '/') in blue
+        printf("%s%s%s\n", STYLE_BLUE_UNDERLINE, slash_pos + 1, STYLE_RESET);
+    }
+    else
+    {
+        // If no '/' found, treat it as a file
+        printf("%s%s%s\n", STYLE_BLUE_UNDERLINE, mutable_line, STYLE_RESET);  // Print as file in blue
+    }
+}
+
 /* Generate a new file from a template */
 void generate_project_from_template(const char *templateName, const char *projectName, bool customize)
-{
-    printf("DEBUG (generator): customize = %d\n", customize);
-    
+{    
     char templatePath[512];
     snprintf(templatePath, sizeof(templatePath), ".templates/%s", templateName);
 
@@ -397,7 +289,7 @@ void generate_project_from_template(const char *templateName, const char *projec
 
     while (fgets(line, sizeof(line), templateFile))
     {
-        // Skip comment headers like // # ...
+        // Skip comment headers // # ...
         if (strncmp(line, "// #", 4) == 0)
             continue;
 
@@ -416,11 +308,10 @@ void generate_project_from_template(const char *templateName, const char *projec
             char filePath[512];
             snprintf(filePath, sizeof(filePath), "%s/%s", projectName, line + 3);
             filePath[strcspn(filePath, "\n")] = 0;
+            printf("\n");
+            print_colored_file_header(line); // Print file header
 
-            printf("\n%s\n", line); // Print file header
-
-            // --- Collect placeholders for this file ---
-#define MAX_PLACEHOLDERS 20
+            //  Collect placeholders for this file
             char placeholder_keys[MAX_PLACEHOLDERS][128];
             char placeholder_defaults[MAX_PLACEHOLDERS][128];
             char user_values[MAX_PLACEHOLDERS][128];
@@ -496,7 +387,7 @@ void generate_project_from_template(const char *templateName, const char *projec
             {
                 for (int i = 0; i < num_placeholders; i++)
                 {
-                    printf("Customize %s (default: %s): ", placeholder_keys[i], placeholder_defaults[i]);
+                    printf("%s (default: %s): ", placeholder_keys[i], placeholder_defaults[i]);
                     fgets(user_values[i], sizeof(user_values[i]), stdin);
                     user_values[i][strcspn(user_values[i], "\n")] = 0;
 
@@ -511,7 +402,7 @@ void generate_project_from_template(const char *templateName, const char *projec
                     strncpy(user_values[i], placeholder_defaults[i], sizeof(user_values[i]));
             }
 
-            // --- Build pointer arrays for replacement ---
+            // Build pointer arrays for replacement 
             const char *replacement_ptrs[MAX_PLACEHOLDERS];
             const char *key_ptrs[MAX_PLACEHOLDERS];
             for (int i = 0; i < num_placeholders; i++)
@@ -520,7 +411,7 @@ void generate_project_from_template(const char *templateName, const char *projec
                 key_ptrs[i] = placeholder_keys[i];
             }
 
-            // --- Generate file ---
+            // Generate file 
             fseek(templateFile, section_start, SEEK_SET);
             create_file_from_line(templateFile, filePath, key_ptrs, replacement_ptrs, num_placeholders);
         }
