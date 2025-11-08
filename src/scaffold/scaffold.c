@@ -67,9 +67,9 @@ int choose_template(char *template_name, size_t size)
         printf("You need at least one template to create a project.\n");
 
         const char *yes_no[] = {"Yes", "No"};
-        int install_choice = selection("Would you like to install a template now?", yes_no, 2);
+        int install_choice = (selection("Would you like to install a template now?", yes_no, 2) == 0);
 
-        if (!install_choice)
+        if (install_choice)
         {
             char path[512];
             printf("Enter the path of your template file: ");
@@ -146,7 +146,7 @@ void scaffold()
 
     // Step 3: Ask if user wants to customize placeholders
     const char *yes_no[] = {"Yes", "No"};
-    int customize = selection("Do you want to customize placeholder values?", yes_no, 2);
+    int customize = (selection("Do you want to customize placeholder values?", yes_no, 2) == 0);
 
     // Step 4: Extract placeholders from template
 #define MAX_PLACEHOLDERS 20
@@ -166,25 +166,25 @@ void scaffold()
     }
 
     // Step 5: Prompt user for each placeholder if customization is enabled
-    for (int i = 0; i < num_placeholders; i++)
-    {
-        if (!customize)
-        {
-            printf("Customize %s (default: %s)? (leave empty for default): ",
-                   placeholder_keys[i], placeholder_defaults[i]);
-            fgets(user_values[i], sizeof(user_values[i]), stdin);
-            user_values[i][strcspn(user_values[i], "\n")] = 0;
+    // for (int i = 0; i < num_placeholders; i++)
+    // {
+    //     if (!customize)
+    //     {
+    //         printf("Customize %s (default: %s)? (leave empty for default): ",
+    //                placeholder_keys[i], placeholder_defaults[i]);
+    //         fgets(user_values[i], sizeof(user_values[i]), stdin);
+    //         user_values[i][strcspn(user_values[i], "\n")] = 0;
 
-            if (strlen(user_values[i]) == 0)
-            {
-                strncpy(user_values[i], placeholder_defaults[i], sizeof(user_values[i]));
-            }
-        }
-        else
-        {
-            strncpy(user_values[i], placeholder_defaults[i], sizeof(user_values[i]));
-        }
-    }
+    //         if (strlen(user_values[i]) == 0)
+    //         {
+    //             strncpy(user_values[i], placeholder_defaults[i], sizeof(user_values[i]));
+    //         }
+    //     }
+    //     else
+    //     {
+    //         strncpy(user_values[i], placeholder_defaults[i], sizeof(user_values[i]));
+    //     }
+    // }
 
     // Step 6: Convert to const char * arrays for generator
     const char *replacement_ptrs[MAX_PLACEHOLDERS];
@@ -195,8 +195,14 @@ void scaffold()
         key_ptrs[i] = placeholder_keys[i];
     }
 
+    printf("DEBUG (scaffold): customize = %d\n", customize);
+
+
     // Step 7: Generate project from template
-    generate_project_from_template(template_name, project_name, key_ptrs, replacement_ptrs, num_placeholders);
+    generate_project_from_template(
+        template_name, 
+        project_name,
+        customize);
 
     // Optional: add additional files step can go here
 }

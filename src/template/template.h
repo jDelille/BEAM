@@ -12,9 +12,7 @@ void convert_windows_path_to_wsl(char *path);
 void generate_project_from_template(
     const char *templateName,
     const char *projectName,
-    const char **placeholder_keys,
-    const char **replacement_values,
-    int key_count);
+    bool customize);
 
 int extract_placeholders_from_template(
     const char *templateName,
