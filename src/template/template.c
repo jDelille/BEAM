@@ -221,55 +221,6 @@ int extract_placeholders_from_template(
 }
 
 
-void print_colored_file_header(const char *line)
-{
-    // Skip the "//" prefix
-    const char *file_line = line + 2;
-
-    // Remove leading spaces after "//"
-    while (*file_line == ' ' || *file_line == '\t')
-    {
-        file_line++;  // Skip the leading spaces
-    }
-
-    // Remove trailing spaces and newline characters
-    size_t len = strlen(file_line);
-    while (len > 0 && (file_line[len - 1] == '\n' || file_line[len - 1] == ' ' || file_line[len - 1] == '\t'))
-    {
-        len--;
-    }
-
-    // Create a copy of the line up to the cleaned length
-    char mutable_line[len + 1];
-    strncpy(mutable_line, file_line, len);
-    mutable_line[len] = '\0';  // Ensure null-termination
-
-    // Look for the '/' character to separate directory and file
-    const char *slash_pos = strchr(mutable_line, '/');
-
-    if (slash_pos != NULL)
-    {
-        // Found a '/', treat it as a directory and file
-        size_t dir_len = slash_pos - mutable_line;
-        
-        // Print the directory part (in green)
-        printf("%s", STYLE_GREEN);
-        printf("%.*s", (int)dir_len, mutable_line);  // Print only the directory part
-        printf("%s", STYLE_RESET);  // Reset color after directory part
-
-        // Print the '/' symbol in green
-        printf("%s/", STYLE_GREEN);
-
-        // Print the file part (after the '/') in blue
-        printf("%s%s%s\n", STYLE_BLUE_UNDERLINE, slash_pos + 1, STYLE_RESET);
-    }
-    else
-    {
-        // If no '/' found, treat it as a file
-        printf("%s%s%s\n", STYLE_BLUE_UNDERLINE, mutable_line, STYLE_RESET);  // Print as file in blue
-    }
-}
-
 /* Generate a new file from a template */
 void generate_project_from_template(const char *templateName, const char *projectName, bool customize)
 {    
@@ -309,7 +260,7 @@ void generate_project_from_template(const char *templateName, const char *projec
             snprintf(filePath, sizeof(filePath), "%s/%s", projectName, line + 3);
             filePath[strcspn(filePath, "\n")] = 0;
             printf("\n");
-            print_colored_file_header(line); // Print file header
+            printf("%s\n", line); // Print file header
 
             //  Collect placeholders for this file
             char placeholder_keys[MAX_PLACEHOLDERS][128];
