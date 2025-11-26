@@ -12,7 +12,7 @@ void yyerror(const char *s);
     char *string;
 }
 
-%token CREATE PROJECT INSTALL TEMPLATE COPY DELETE CLEAR
+%token CREATE PROJECT INSTALL TEMPLATE COPY DELETE CLEAR GOTO VIEW
 %token <string> IDENTIFIER STRING
 %token NEWLINE
 
@@ -30,6 +30,8 @@ command:
     | copy_template NEWLINE
     | delete_template NEWLINE
     | clear_terminal NEWLINE
+    | cd_command NEWLINE
+    | view_command NEWLINE
 ;
 
 install_template: 
@@ -49,6 +51,15 @@ delete_template:
 
 clear_terminal:
     CLEAR { clear_terminal_cmd(); }
+;
+
+cd_command: 
+    GOTO IDENTIFIER { cd_cmd($2); }
+;
+
+view_command:
+    VIEW { view_cmd("."); }
+  | VIEW IDENTIFIER { view_cmd($2); }
 ;
 
 %%

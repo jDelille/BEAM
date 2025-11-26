@@ -6,5 +6,7 @@ void install_template_cmd(const char *path);
 void copy_template_cmd();
 void delete_template_cmd();
 void clear_terminal_cmd();
+void cd_cmd(const char *project_folder);
+void view_cmd(const char *path);
 
 #endif 

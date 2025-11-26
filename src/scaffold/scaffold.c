@@ -6,6 +6,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <stdlib.h>
 
 #include "../template/template.h"
 #include "../utils/defs.h"
@@ -15,24 +16,39 @@
 /* List templates */
 int list_templates(char templates[][256], int max_templates)
 {
-    DIR *d = opendir(".templates");
-    if (!d)
+    // Find the .templates directory, starting from the current directory and moving upwards
+    char* templates_dir = find_templates_directory();
+    if (templates_dir == NULL) {
+        fprintf(stderr, "Error: .templates directory not found.\n");
         return 0;
+    }
+
+    // Build the full path for the templates directory
+    char templates_path[512];
+    snprintf(templates_path, sizeof(templates_path), "%s/.templates", templates_dir);
+    free(templates_dir); 
+
+    DIR *d = opendir(templates_path);
+    if (!d) {
+        fprintf(stderr, "Error: Could not open .templates directory at %s\n", templates_path);
+        return 0;
+    }
 
     struct dirent *file;
     struct stat file_info;
-
     int count = 0;
-    char path[512];
+    char path[1024];
 
+    // Read the files inside .templates
     while ((file = readdir(d)) != NULL && count < max_templates)
     {
-        snprintf(path, sizeof(path), ".templates/%s", file->d_name);
+        snprintf(path, sizeof(path), "%s/%s", templates_path, file->d_name);
+        path[sizeof(path) - 1] = '\0';
 
-        if (stat(path, &file_info) == 0 && S_ISREG(file_info.st_mode))
+        if (stat(path, &file_info) == 0 && S_ISREG(file_info.st_mode))  // Check if it's a regular file
         {
             strncpy(templates[count], file->d_name, 256);
-            templates[count][255] = '\0';
+            templates[count][255] = '\0'; // Ensure null termination
             count++;
         }
     }

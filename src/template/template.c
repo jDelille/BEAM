@@ -53,8 +53,10 @@ const char *get_placeholder(
     int num_placeholders)
 {
     for (int i = 0; i < num_placeholders; i++)
-        if (strcmp(placeholder_name, placeholder_keys[i]) == 0)
+        if (strcmp(placeholder_name, placeholder_keys[i]) == 0) {
             return placeholder_values[i];
+        }
+            
     return "";
 }
 
@@ -136,7 +138,7 @@ int extract_placeholders_from_template(
     int max_placeholders)
 {
     char template_path[512];
-    snprintf(template_path, sizeof(template_path), ".templates/%s", template_name);
+    snprintf(template_path, sizeof(template_path), "/mnt/c/Users/justi/Desktop/raft/.templates/%s", template_name);
 
     FILE *file = fopen(template_path, "r");
     if (!file)
@@ -338,7 +340,7 @@ void delete_template()
 void generate_project_from_template(const char *templateName, const char *projectName, bool customize)
 {
     char templatePath[512];
-    snprintf(templatePath, sizeof(templatePath), ".templates/%s", templateName);
+    snprintf(templatePath, sizeof(templatePath), "/mnt/c/Users/justi/Desktop/raft/.templates/%s", templateName);
 
     FILE *templateFile = fopen(templatePath, "r");
     if (!templateFile)

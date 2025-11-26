@@ -9,21 +9,32 @@ export default function [COMPONENT_NAME=Component]() {
   );
 }
 
+// # dynamic component class 
+// # allow same name to appear in many places, default only first one, only appear on first 
+// # unique variable name could be used multiple times 
+
+// # implement .trash 
+// # start documentation 
+// # add package.json, download Dependencies 
+// # cd into directories, create and change into directory 
+// # make one projects folder, create projects in that folder 
+// # //a/b/c/b.txt/
+
 // app//components/button.tsx
-export default function [COMPONENT_NAME=Component]() {
+export default function [COMPONENT_NAME]() {
   return (
-    <[ELEMENT=div] className="[CLASS_NAME=container]">
+    <[ELEMENT] className="[CLASS_NAME]">
       Submit
-    </[ELEMENT=div]>
+    </[ELEMENT]>
   );
 }
 
 // app//components/navbar.tsx
-export default function [COMPONENT_NAME=Component]() {
+export default function [NAV_COMPONENT_NAME]() {
   return (
-    <[ELEMENT=div] className="[CLASS_NAME=container]">
-      [COMPONENT_NAME=Component]
-    </[ELEMENT=div]>
+    <[ELEMENT_NAV] className="[NAV_CLASS_NAME]">
+      [NAV_COMPONENT_NAME]
+    </[ELEMENT_NAV]>
   );
 }
 

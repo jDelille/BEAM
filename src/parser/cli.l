@@ -19,8 +19,10 @@ void yyerror(const char *s);
 "copy"          { return COPY; }
 "delete"        { return DELETE; }
 "clear"         { return CLEAR; }
+"goto"          { return GOTO; }
+"view"          { return VIEW; }
 
-[a-zA-Z_][a-zA-Z0-9_.]*  { 
+[a-zA-Z_./][a-zA-Z0-9_./]* {
     yylval.string = strdup(yytext);
     return IDENTIFIER;
 }

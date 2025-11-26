@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <sys/stat.h> 
 #include <libgen.h>    
+#include <dirent.h>
 
 /**
  * @brief Reads a single character from standard input without waiting for the Enter key
@@ -163,6 +164,43 @@ void ensure_parent_dirs(const char *file_path)
     {
         mkdir(dir, 0755);
     }
+}
+
+bool directory_exists(const char *dir_name) {
+    struct stat statbuf;
+    return (stat(dir_name, &statbuf) == 0 && S_ISDIR(statbuf.st_mode));
+}
+
+char* find_templates_directory() {
+    char current_dir[512];
+
+    // Start from the root of the project, specify this directory explicitly
+    const char *root_directory = "/mnt/c/Users/justi/Desktop/raft";  // Update this to your root directory
+
+    // Set the current directory to root directory
+    strncpy(current_dir, root_directory, sizeof(current_dir));
+    current_dir[sizeof(current_dir) - 1] = '\0';  // Ensure null termination
+
+    printf("Debug: Starting search from directory: %s\n", current_dir);
+
+    // Look for the .templates folder in the root directory or its subdirectories
+    DIR *d = opendir(current_dir);
+    if (d) {
+        struct dirent *entry = readdir(d);
+        while (entry) {
+            if (strcmp(entry->d_name, ".templates") == 0) {
+                closedir(d);
+                printf("Found .templates directory at: %s\n", current_dir);
+                return strdup(current_dir);  // Return the path of the .templates directory
+            }
+            entry = readdir(d);
+        }
+        closedir(d);
+    }
+
+    // If not found, print error
+    printf("Error: .templates directory not found.\n");
+    return NULL;
 }
 
 void replace_placeholders(
