@@ -190,19 +190,17 @@ void empty_trash()
     }
 }
 
-const char *ROOT_FOLDER = "/mnt/c/Users/justi/Desktop/raft";
+const char *ROOT_FOLDER = "/mnt/c/Users/justi/Desktop/beam";
 
 void print_prompt()
 {
     char cwd[PATH_MAX];
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
         if (strncmp(cwd, ROOT_FOLDER, strlen(ROOT_FOLDER)) == 0) {
-            // Show relative path from 'raft', include 'raft' itself
-            const char *relative = cwd + strlen("/mnt/c/Users/justi/Desktop/"); // start at "raft"
+            const char *relative = cwd + strlen("/mnt/c/Users/justi/Desktop/"); // start at "beam"
             printf("%s%s> %s", STYLE_CYAN_BLUE, relative, STYLE_RESET);
 
         } else {
-            // Outside of root
             printf("%s%s> %s", STYLE_CYAN_BLUE, cwd, STYLE_RESET);
         }
     } else {
