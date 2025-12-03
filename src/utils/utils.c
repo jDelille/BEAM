@@ -195,7 +195,7 @@ char* find_templates_directory() {
     char current_dir[512];
 
     // Start from the root of the project, specify this directory explicitly
-    const char *root_directory = "/mnt/c/Users/justi/Desktop/raft";  
+    const char *root_directory = "/mnt/c/Users/justi/Desktop/beam";  
 
     // Set the current directory to root directory
     strncpy(current_dir, root_directory, sizeof(current_dir));

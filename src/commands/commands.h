@@ -13,5 +13,7 @@ void recover_file_cmd(const char *filename);
 void empty_trash(); 
 void print_prompt();
 void show_help();
+void copy_project_cmd();
+void create_template_cmd();
 
 #endif 

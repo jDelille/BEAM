@@ -36,6 +36,8 @@ command:
     | recover_file_command NEWLINE
     | empty_trash NEWLINE
     | help_command NEWLINE
+    | copy_project NEWLINE
+    | create_template NEWLINE
 ;
 
 install_template: 
@@ -82,6 +84,14 @@ empty_trash:
 
 help_command:
     HELP { show_help(); }
+;
+
+copy_project:
+    COPY PROJECT { copy_project_cmd(); }
+;
+
+create_template:
+    CREATE TEMPLATE { create_template_cmd(); }
 ;
 
 %%

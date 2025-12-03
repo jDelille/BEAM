@@ -6,6 +6,7 @@
 #include <libgen.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <errno.h>
 
 #include "../utils/defs.h"
 #include "../utils/utils.h"
@@ -14,7 +15,6 @@
 
 #define MAX_GLOBAL_PLACEHOLDERS 128
 #define MAX_PENDING_FILES 256
-
 
 typedef struct
 {
@@ -153,7 +153,7 @@ int extract_placeholders_from_template(
     int max_placeholders)
 {
     char template_path[512];
-    snprintf(template_path, sizeof(template_path), "/mnt/c/Users/justi/Desktop/raft/.templates/%s", template_name);
+    snprintf(template_path, sizeof(template_path), "/mnt/c/Users/justi/Desktop/beam/.templates/%s", template_name);
 
     FILE *file = fopen(template_path, "r");
     if (!file)
@@ -326,11 +326,75 @@ void delete_template()
     }
 }
 
+/* Create a template */
+void create_template()
+{
+    char template_name[256];
+    char folder[] = ".templates";
+    char filepath[512];
+
+    // Ask for template name
+    printf("What is your template named? » ");
+    fflush(stdout);
+
+    if (!fgets(template_name, sizeof(template_name), stdin)) {
+        printf("Failed to read template name.\n");
+        return;
+    }
+
+    // Remove newline
+    template_name[strcspn(template_name, "\n")] = 0;
+
+    if (strlen(template_name) == 0) {
+        printf("Template name cannot be empty.\n");
+        return;
+    }
+
+    // Create the .templates folder if it doesn't exist
+    if (mkdir(folder, 0755) != 0 && errno != EEXIST) {
+        perror("Error creating .templates folder");
+        return;
+    }
+
+    // Build full path
+    snprintf(filepath, sizeof(filepath), "%s/%s.tmpl", folder, template_name);
+
+    // Open file and write boilerplate
+    FILE *file = fopen(filepath, "w");
+    if (!file) {
+        perror("Error creating template file");
+        return;
+    }
+
+    fprintf(file, "// %s.tmpl\n", template_name);
+fprintf(file, "// Sample template showing placeholders and structure\n\n");
+
+fprintf(file,
+        "-- app/Page.tsx\n"
+        "export default function [PAGE_COMPONENT=Page]() {\n"
+        "    return (\n"
+        "        <div className=\"[PAGE_CLASSNAME=page]\">\n"
+        "            <[NAVBAR_COMPONENT=Navbar] />\n"
+        "        </div>\n"
+        "    );\n"
+        "}\n\n");
+
+fprintf(file,
+        "-- app/components/reusable/button/Button.tsx\n"
+        "const [BUTTON_COMPONENT=Button] = ({ text, onClick }) => (\n"
+        "    <button onClick={onClick}>{text}</button>\n"
+        ");\n\n"
+        "export default [BUTTON_COMPONENT];\n");
+
+    fclose(file);
+    printf("Template '%s' created successfully in '%s'!\n", template_name, folder);
+}
+
 /* Generate a new project from a template */
 void generate_project_from_template(const char *templateName, const char *projectName, bool customize)
 {
     char templatePath[512];
-    snprintf(templatePath, sizeof(templatePath), "/mnt/c/Users/justi/Desktop/raft/.templates/%s", templateName);
+    snprintf(templatePath, sizeof(templatePath), "/mnt/c/Users/justi/Desktop/beam/.templates/%s", templateName);
 
     FILE *templateFile = fopen(templatePath, "r");
     if (!templateFile)
@@ -340,13 +404,38 @@ void generate_project_from_template(const char *templateName, const char *projec
     }
 
     char project_path[512];
-    snprintf(project_path, sizeof(project_path), "projects/%s", projectName);
 
-    struct stat st;
-    if (stat("projects", &st) != 0) {
-        mkdir("projects", 0755);
+    char cwd[512];
+    getcwd(cwd, sizeof(cwd));
+
+    bool in_projects_dir = false;
+
+    const char *last = strrchr(cwd, '/');
+    if (last && strcmp(last + 1, "projects") == 0)
+    {
+        in_projects_dir = true;
     }
-    
+
+    if (in_projects_dir)
+    {
+        // Already in /projects → avoid nesting
+        snprintf(project_path, sizeof(project_path), "%s", projectName);
+    }
+    else
+    {
+        // Normal case → create inside projects/
+        snprintf(project_path, sizeof(project_path), "projects/%s", projectName);
+    }
+
+    if (!in_projects_dir)
+    {
+        struct stat st;
+        if (stat("projects", &st) != 0)
+        {
+            mkdir("projects", 0755);
+        }
+    }
+
     mkdir(project_path, 0755);
 
     char line[1024];

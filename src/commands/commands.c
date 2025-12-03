@@ -12,6 +12,7 @@
 
 #include "../scaffold/scaffold.h"
 #include "../template/template.h"
+#include "../project/project.h"
 #include "../utils/utils.h"
 #include "../utils/selection.h"
 #include "../utils/defs.h"
@@ -37,10 +38,18 @@ void delete_template_cmd()
     delete_template();
 }
 
+void copy_project_cmd() {
+    copy_project();
+}
+
 void clear_terminal_cmd()
 {
     system("clear");
     return;
+}
+
+void create_template_cmd() {
+    create_template();
 }
 
 void create_directory(const char *dir_name)
