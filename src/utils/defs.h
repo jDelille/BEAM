@@ -3,7 +3,7 @@
 #define CLI_DEFS_H
 
 // Styling
-#define STYLE_CYAN_BLUE        "\033[1;36m"
+#define STYLE_CYAN_BLUE        "\033[34m"
 #define STYLE_BLUE_UNDERLINE   "\033[38;5;32m"
 #define STYLE_RESET            "\033[0m"
 #define HIGHLIGHT_TEMPLATE     STYLE_CYAN_BLUE
@@ -43,5 +43,8 @@
 // 
 
 #define MAX_PLACEHOLDERS 20
+
+#define ROOT_FOLDER "/mnt/c/Users/justi/Desktop/beam"
+#define DESKTOP_PATH "/mnt/c/Users/justi/Desktop/"
 
 #endif // CLI_DEFS_H

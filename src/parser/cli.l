@@ -17,6 +17,7 @@ void yyerror(const char *s);
 "projects"      { return PROJECTS; }
 "install"       { return INSTALL; }
 "template"      { return TEMPLATE; }
+"templates"     { return TEMPLATES; }
 "copy"          { return COPY; }
 "delete"        { return DELETE; }
 "clear"         { return CLEAR; }

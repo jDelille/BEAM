@@ -118,9 +118,10 @@ int choose_template(char *template_name, size_t size)
     }
 
     const char *template_names[64];
-    for (int i = 0; i < num_templates; i++)
+    for (int i = 0; i < num_templates; i++) {
         template_names[i] = templates_list[i];
-
+    }
+        
     int selected = selection("Which template do you want to use?", template_names, num_templates);
 
     strncpy(template_name, templates_list[selected], size);

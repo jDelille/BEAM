@@ -24,7 +24,6 @@ void create_project_cmd()
 
 void install_template_cmd(const char *path)
 {
-    printf("Installing template: %s\n", path);
     install_template(path);
 }
 
@@ -71,7 +70,33 @@ void view_projects_cmd()
 
     printf("Projects:\n");
     for (int i = 0; i < num_projects; i++) {
-        printf("  %d. %s\n", i + 1, projects_list[i]);
+        printf("%s\n", projects_list[i]);
+    }
+}
+
+void rename_template_cmd() {
+    rename_template();
+}
+
+void show_usage(const char *command) {
+    if (strcmp(command, "CREATE") == 0) {
+        printf("Usage: create project | create template\n");
+    } else if (strcmp(command, "COPY") == 0) {
+        printf("Usage: copy project | copy template\n");
+    } else if (strcmp(command, "DELETE") == 0) {
+        printf("Usage: delete project | delete template | delete <filename>\n");
+    } else if (strcmp(command, "VIEW") == 0) {
+        printf("Usage: view projects | view templates | view trash\n");
+    } else if (strcmp(command, "EMPTY") == 0) {
+        printf("Usage: empty trash\n");
+    } else if (strcmp(command, "GOTO") == 0) {
+        printf("Usage: goto <directory>\n");
+    } else if (strcmp(command, "INSTALL") == 0) {
+        printf("Usage: install template <template_path>\n");
+    } else if (strcmp(command, "RENAME") == 0){
+        printf("Usage: rename project | rename template\n");
+    } else {
+        printf("Unknown command. Type HELP for a list of commands.\n");
     }
 }
 
@@ -98,10 +123,6 @@ void change_directory(const char *dir_name)
     {
         perror("Error changing directory");
         return;
-    }
-    else
-    {
-        // printf("Changed directory to: %s\n", dir_name);
     }
 }
 
@@ -198,6 +219,8 @@ void recover_file_cmd(const char *filename)
     }
 }
 
+
+/* Delete each file/folder in directory in the trash when empty_trash() is called */
 int remove_callback(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf)
 {
     (void)sb;
@@ -223,8 +246,6 @@ void empty_trash()
     }
 }
 
-const char *ROOT_FOLDER = "/mnt/c/Users/justi/Desktop/beam";
-
 void print_prompt()
 {
     char cwd[PATH_MAX];
@@ -232,7 +253,7 @@ void print_prompt()
     {
         if (strncmp(cwd, ROOT_FOLDER, strlen(ROOT_FOLDER)) == 0)
         {
-            const char *relative = cwd + strlen("/mnt/c/Users/justi/Desktop/"); // start at "beam"
+            const char *relative = cwd + strlen(DESKTOP_PATH); // start at root directory
             printf("%s%s> %s", STYLE_CYAN_BLUE, relative, STYLE_RESET);
         }
         else

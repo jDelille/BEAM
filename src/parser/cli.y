@@ -13,15 +13,17 @@ void yyerror(const char *s);
     char *string;
 }
 
-%token CREATE PROJECT PROJECTS INSTALL TEMPLATE COPY DELETE CLEAR GOTO VIEW RECOVER EMPTY TRASH HELP RENAME
+%token CREATE PROJECT PROJECTS INSTALL TEMPLATE TEMPLATES COPY DELETE CLEAR GOTO VIEW RECOVER EMPTY TRASH HELP RENAME
 %token <string> IDENTIFIER STRING
 %token NEWLINE
 
 %%
 
 commands:
-    | command { print_prompt(); fflush(stdout); } commands
-    | NEWLINE commands
+    /* empty */ 
+  | command { print_prompt(); fflush(stdout); } commands
+  | partial_command { print_prompt(); fflush(stdout); } commands
+  | NEWLINE commands
 ;
 
 command:
@@ -40,6 +42,19 @@ command:
     | create_template NEWLINE
     | rename_project NEWLINE
     | view_projects NEWLINE
+    | view_trash NEWLINE
+    | view_templates NEWLINE
+    | rename_template NEWLINE
+;
+
+partial_command:
+      CREATE NEWLINE  { show_usage("CREATE"); }
+    | COPY NEWLINE    { show_usage("COPY"); }
+    | DELETE NEWLINE  { show_usage("DELETE"); }
+    | EMPTY NEWLINE   { show_usage("EMPTY"); }
+    | GOTO NEWLINE    { show_usage("GOTO"); }
+    | INSTALL NEWLINE { show_usage("INSTALL"); }
+    | RENAME NEWLINE  { show_usage("RENAME"); }
 ;
 
 install_template: 
@@ -95,6 +110,11 @@ copy_project:
 
 rename_project:
     RENAME PROJECT { rename_project_cmd(); }
+;
+
+rename_template:
+    RENAME TEMPLATE { rename_template_cmd(); }
+;
 
 create_template:
     CREATE TEMPLATE { create_template_cmd(); }
@@ -104,6 +124,13 @@ view_projects:
     VIEW PROJECTS { view_projects_cmd(); }
 ;
 
+view_trash:
+    VIEW TRASH { view_cmd(".trash"); }
+;
+
+view_templates:
+    VIEW TEMPLATES { view_cmd(".templates"); }
+;
 %%
 
 void yyerror(const char *s) {

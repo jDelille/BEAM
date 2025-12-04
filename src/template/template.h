@@ -15,6 +15,8 @@ void delete_template();
 
 void create_template();
 
+void rename_template();
+
 void generate_project_from_template(
     const char *templateName,
     const char *projectName,

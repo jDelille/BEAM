@@ -59,19 +59,20 @@ extern int yydebug;
     PROJECTS = 260,                /* PROJECTS  */
     INSTALL = 261,                 /* INSTALL  */
     TEMPLATE = 262,                /* TEMPLATE  */
-    COPY = 263,                    /* COPY  */
-    DELETE = 264,                  /* DELETE  */
-    CLEAR = 265,                   /* CLEAR  */
-    GOTO = 266,                    /* GOTO  */
-    VIEW = 267,                    /* VIEW  */
-    RECOVER = 268,                 /* RECOVER  */
-    EMPTY = 269,                   /* EMPTY  */
-    TRASH = 270,                   /* TRASH  */
-    HELP = 271,                    /* HELP  */
-    RENAME = 272,                  /* RENAME  */
-    IDENTIFIER = 273,              /* IDENTIFIER  */
-    STRING = 274,                  /* STRING  */
-    NEWLINE = 275                  /* NEWLINE  */
+    TEMPLATES = 263,               /* TEMPLATES  */
+    COPY = 264,                    /* COPY  */
+    DELETE = 265,                  /* DELETE  */
+    CLEAR = 266,                   /* CLEAR  */
+    GOTO = 267,                    /* GOTO  */
+    VIEW = 268,                    /* VIEW  */
+    RECOVER = 269,                 /* RECOVER  */
+    EMPTY = 270,                   /* EMPTY  */
+    TRASH = 271,                   /* TRASH  */
+    HELP = 272,                    /* HELP  */
+    RENAME = 273,                  /* RENAME  */
+    IDENTIFIER = 274,              /* IDENTIFIER  */
+    STRING = 275,                  /* STRING  */
+    NEWLINE = 276                  /* NEWLINE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -84,7 +85,7 @@ union YYSTYPE
 
     char *string;
 
-#line 88 "build/cli.tab.h"
+#line 89 "build/cli.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

@@ -84,20 +84,27 @@ const char *get_placeholder(
 
 void create_dir_from_line(const char *line, const char *projectName)
 {
-    const char *dir_name = line;
-    while (*dir_name == '/' || *dir_name == ' ')
-        dir_name++;
+    // Skip leading spaces & slashes
+    while (*line == ' ' || *line == '/')
+    {
+        line++;
+    }
 
-    if (*dir_name == '\0')
+    if (*line == '\0')
+    {
         return;
+    }
 
-    size_t dir_length = strlen(dir_name);
+    size_t len = strlen(line);
 
-    if (dir_name[dir_length - 1] != '/')
+    // ends with '/'
+    if (len == 0 || line[len - 1] != '/')
+    {
         return;
+    }
 
     char path[512];
-    snprintf(path, sizeof(path), "%s/%.*s", projectName, (int)(dir_length - 1), dir_name); // remove trailing /
+    snprintf(path, sizeof(path), "%s/%.*s", projectName, (int)(len - 1), line); // remove trailing '/'
 
     mkdir(path, 0755);
 }
@@ -239,16 +246,19 @@ void copy_template()
     char templates_list[64][256];
     int num_templates = list_templates(templates_list, 64);
 
-    if (num_templates <= 0)
+    if (num_templates <= 0) {
         return;
-
+    }
+        
     const char *template_names[64];
-    for (int i = 0; i < num_templates; i++)
+    for (int i = 0; i < num_templates; i++) {
         template_names[i] = templates_list[i];
-
+    }
+        
     int template_selection = selection("Which template do you want to copy?", template_names, num_templates);
-    if (template_selection < 0)
+    if (template_selection < 0) {
         return;
+    }
 
     const char *filename = template_names[template_selection];
     char src_path[512];
@@ -294,14 +304,15 @@ void delete_template()
         }
 
         const char *template_names[65];
-        for (int i = 0; i < num_templates; i++)
+        for (int i = 0; i < num_templates; i++) {
             template_names[i] = templates_list[i];
+        }
+            
         template_names[num_templates] = "Quit";
 
         int selected = selection("Which template do you want to delete?", template_names, num_templates + 1);
         if (selected == num_templates || selected < 0)
         {
-            printf("Exiting template deletion.\n");
             break;
         }
 
@@ -317,12 +328,78 @@ void delete_template()
 
         char path[512];
         snprintf(path, sizeof(path), ".templates/%s", selected_template);
-        if (remove(path) == 0)
-            printf("Template '%s' deleted successfully.\n", selected_template);
-        else
-            perror("Error deleting template");
 
-        printf("\n");
+        if (remove(path) == 0)
+        {
+            printf("Template '%s' deleted successfully.\n", selected_template);
+        }
+        else
+        {
+            perror("Failed to delete template");
+        }
+    }
+}
+
+/* Rename a template*/
+void rename_template()
+{
+    char templates_list[64][256];
+    int num_templates = list_templates(templates_list, 64);
+
+    if (num_templates <= 0)
+    {
+        printf("No templates found in the .templates folder.\n");
+        return;
+    }
+
+    const char *template_names[64];
+    for (int i = 0; i < num_templates; i++) {
+        template_names[i] = templates_list[i];
+    }
+        
+
+    int selection_index = selection("Which template do you want to rename?", template_names, num_templates);
+    if (selection_index < 0) {
+        return;
+    }
+        
+    const char *selected_template = template_names[selection_index];
+
+    char new_name[256];
+    printf("Enter a new name for the template '%s': ", selected_template);
+    if (scanf("%255s", new_name) != 1)
+    {
+        printf("Invalid input.\n");
+        return;
+    }
+    new_name[255] = '\0';
+
+    char base_name[256];
+    strncpy(base_name, selected_template, 255);
+    base_name[255] = '\0';
+
+    char *ext = strstr(base_name, ".tmpl");
+    if (ext) {
+        *ext = '\0';
+    }
+
+    char old_path[512], new_path[512];
+    snprintf(old_path, sizeof(old_path), ".templates/%s.tmpl", base_name);
+    snprintf(new_path, sizeof(new_path), ".templates/%s.tmpl", new_name);
+
+    if (access(new_path, F_OK) == 0)
+    {
+        printf("Error: A template named '%s' already exists.\n", new_name);
+        return;
+    }
+
+    if (rename(old_path, new_path) == 0)
+    {
+        printf("Template '%s' successfully renamed to '%s'.\n", selected_template, new_name);
+    }
+    else
+    {
+        perror("Failed to rename template");
     }
 }
 
@@ -333,11 +410,11 @@ void create_template()
     char folder[] = ".templates";
     char filepath[512];
 
-    // Ask for template name
     printf("What is your template named? » ");
     fflush(stdout);
 
-    if (!fgets(template_name, sizeof(template_name), stdin)) {
+    if (!fgets(template_name, sizeof(template_name), stdin))
+    {
         printf("Failed to read template name.\n");
         return;
     }
@@ -345,46 +422,46 @@ void create_template()
     // Remove newline
     template_name[strcspn(template_name, "\n")] = 0;
 
-    if (strlen(template_name) == 0) {
+    if (strlen(template_name) == 0)
+    {
         printf("Template name cannot be empty.\n");
         return;
     }
 
-    // Create the .templates folder if it doesn't exist
-    if (mkdir(folder, 0755) != 0 && errno != EEXIST) {
+    if (mkdir(folder, 0755) != 0 && errno != EEXIST)
+    {
         perror("Error creating .templates folder");
         return;
     }
 
-    // Build full path
     snprintf(filepath, sizeof(filepath), "%s/%s.tmpl", folder, template_name);
 
-    // Open file and write boilerplate
     FILE *file = fopen(filepath, "w");
-    if (!file) {
+    if (!file)
+    {
         perror("Error creating template file");
         return;
     }
 
     fprintf(file, "// %s.tmpl\n", template_name);
-fprintf(file, "// Sample template showing placeholders and structure\n\n");
+    fprintf(file, "// Sample template showing placeholders and structure\n\n");
 
-fprintf(file,
-        "-- app/Page.tsx\n"
-        "export default function [PAGE_COMPONENT=Page]() {\n"
-        "    return (\n"
-        "        <div className=\"[PAGE_CLASSNAME=page]\">\n"
-        "            <[NAVBAR_COMPONENT=Navbar] />\n"
-        "        </div>\n"
-        "    );\n"
-        "}\n\n");
+    fprintf(file,
+            "-- app/Page.tsx\n"
+            "export default function [PAGE_COMPONENT=Page]() {\n"
+            "    return (\n"
+            "        <div className=\"[PAGE_CLASSNAME=page]\">\n"
+            "            <[NAVBAR_COMPONENT=Navbar] />\n"
+            "        </div>\n"
+            "    );\n"
+            "}\n\n");
 
-fprintf(file,
-        "-- app/components/reusable/button/Button.tsx\n"
-        "const [BUTTON_COMPONENT=Button] = ({ text, onClick }) => (\n"
-        "    <button onClick={onClick}>{text}</button>\n"
-        ");\n\n"
-        "export default [BUTTON_COMPONENT];\n");
+    fprintf(file,
+            "-- app/components/reusable/button/Button.tsx\n"
+            "const [BUTTON_COMPONENT=Button] = ({ text, onClick }) => (\n"
+            "    <button onClick={onClick}>{text}</button>\n"
+            ");\n\n"
+            "export default [BUTTON_COMPONENT];\n");
 
     fclose(file);
     printf("Template '%s' created successfully in '%s'!\n", template_name, folder);
@@ -418,12 +495,10 @@ void generate_project_from_template(const char *templateName, const char *projec
 
     if (in_projects_dir)
     {
-        // Already in /projects → avoid nesting
         snprintf(project_path, sizeof(project_path), "%s", projectName);
     }
     else
     {
-        // Normal case → create inside projects/
         snprintf(project_path, sizeof(project_path), "projects/%s", projectName);
     }
 
@@ -446,16 +521,21 @@ void generate_project_from_template(const char *templateName, const char *projec
     // scan all files and placeholders
     while (fgets(line, sizeof(line), templateFile))
     {
-        if (strncmp(line, "//", 2) == 0)
+        if (strncmp(line, "//", 2) == 0) {
             continue;
+        }
+            
 
-        if (strncmp(line, "--", 2) != 0)
+        if (strncmp(line, "--", 2) != 0) {
             continue;
+        }
+            
 
         const char *file_path = line + 2;
-        while (*file_path == ' ')
+        while (*file_path == ' ') {
             file_path++;
-
+        }
+            
         char full_path[1024];
         snprintf(full_path, sizeof(full_path), "%s/%s", project_path, file_path);
         full_path[strcspn(full_path, "\r\n")] = 0;
